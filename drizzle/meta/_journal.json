@@ -78,6 +78,13 @@
       "when": 1781286014705,
       "tag": "0010_ordinary_nightcrawler",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1782056248856,
+      "tag": "0011_short_frog_thor",
+      "breakpoints": true
     }
   ]
 }

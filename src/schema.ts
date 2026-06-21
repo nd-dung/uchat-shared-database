@@ -39,22 +39,6 @@ export const chatWindowPositionEnum = pgEnum('chat_window_position', [
   'bottom_left',
 ]);
 
-export const knowledgeCategoryStatusEnum = pgEnum('knowledge_category_status', [
-  'active',
-  'inactive',
-]);
-
-export const knowledgeDocumentStatusEnum = pgEnum('knowledge_document_status', [
-  'draft',
-  'active',
-  'inactive',
-]);
-
-export const knowledgeDocumentSourceTypeEnum = pgEnum(
-  'knowledge_document_source_type',
-  ['manual', 'file', 'url', 'faq'],
-);
-
 export const chatConversationStatusEnum = pgEnum('chat_conversation_status', [
   'bot_active',
   'handoff_requested',
@@ -632,66 +616,6 @@ export const chatConversationFeedbacks = pgTable(
   ],
 );
 
-export const knowledgeCategories = pgTable(
-  'knowledge_categories',
-  {
-    id: serial('id').primaryKey(),
-    facilityId: integer('facility_id')
-      .notNull()
-      .references(() => facilities.id),
-    name: text('name').notNull(),
-    description: text('description'),
-    status: knowledgeCategoryStatusEnum('status').notNull().default('active'),
-    sortOrder: integer('sort_order').notNull().default(0),
-    createdBy: integer('created_by').references(() => users.id),
-    updatedBy: integer('updated_by').references(() => users.id),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
-    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
-    deletedAt: timestamp('deleted_at', { withTimezone: true }),
-  },
-  (table) => [
-    index('knowledge_categories_facility_id_idx').on(table.facilityId),
-    index('knowledge_categories_status_idx').on(table.status),
-    index('knowledge_categories_deleted_at_idx').on(table.deletedAt),
-    unique('knowledge_categories_facility_id_name_unique').on(
-      table.facilityId,
-      table.name,
-    ),
-  ],
-);
-
-export const knowledgeDocuments = pgTable(
-  'knowledge_documents',
-  {
-    id: serial('id').primaryKey(),
-    facilityId: integer('facility_id')
-      .notNull()
-      .references(() => facilities.id),
-    categoryId: integer('category_id').references(() => knowledgeCategories.id),
-    title: text('title').notNull(),
-    summary: text('summary'),
-    content: text('content').notNull(),
-    sourceType: knowledgeDocumentSourceTypeEnum('source_type')
-      .notNull()
-      .default('manual'),
-    sourceUrl: text('source_url'),
-    status: knowledgeDocumentStatusEnum('status').notNull().default('draft'),
-    createdBy: integer('created_by').references(() => users.id),
-    updatedBy: integer('updated_by').references(() => users.id),
-    publishedAt: timestamp('published_at', { withTimezone: true }),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
-    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
-    deletedAt: timestamp('deleted_at', { withTimezone: true }),
-  },
-  (table) => [
-    index('knowledge_documents_facility_id_idx').on(table.facilityId),
-    index('knowledge_documents_category_id_idx').on(table.categoryId),
-    index('knowledge_documents_status_idx').on(table.status),
-    index('knowledge_documents_source_type_idx').on(table.sourceType),
-    index('knowledge_documents_deleted_at_idx').on(table.deletedAt),
-  ],
-);
-
 export const permissions = pgTable('permissions', {
   id: serial('id').primaryKey(),
   name: text('name').notNull().unique(),
@@ -741,10 +665,6 @@ export type ChatConversationFeedback =
   typeof chatConversationFeedbacks.$inferSelect;
 export type NewChatConversationFeedback =
   typeof chatConversationFeedbacks.$inferInsert;
-export type KnowledgeCategory = typeof knowledgeCategories.$inferSelect;
-export type NewKnowledgeCategory = typeof knowledgeCategories.$inferInsert;
-export type KnowledgeDocument = typeof knowledgeDocuments.$inferSelect;
-export type NewKnowledgeDocument = typeof knowledgeDocuments.$inferInsert;
 export type Permission = typeof permissions.$inferSelect;
 export type NewPermission = typeof permissions.$inferInsert;
 export type UserPermission = typeof userPermissions.$inferSelect;

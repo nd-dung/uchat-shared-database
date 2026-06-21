@@ -4,42 +4,6 @@ import { runSeeder } from './run-seeder';
 
 export const PERMISSION_SEEDS = [
   {
-    name: 'knowledge.category.view',
-    description: 'Xem danh mục tri thức.',
-  },
-  {
-    name: 'knowledge.category.create',
-    description: 'Tạo danh mục tri thức.',
-  },
-  {
-    name: 'knowledge.category.update',
-    description: 'Cập nhật danh mục tri thức.',
-  },
-  {
-    name: 'knowledge.category.delete',
-    description: 'Xóa danh mục tri thức.',
-  },
-  {
-    name: 'knowledge.document.view',
-    description: 'Xem document tri thức.',
-  },
-  {
-    name: 'knowledge.document.create',
-    description: 'Tạo document tri thức.',
-  },
-  {
-    name: 'knowledge.document.update',
-    description: 'Cập nhật document tri thức.',
-  },
-  {
-    name: 'knowledge.document.delete',
-    description: 'Xóa document tri thức.',
-  },
-  {
-    name: 'knowledge.document.publish',
-    description: 'Cập nhật trạng thái document tri thức.',
-  },
-  {
     name: 'conversation.view',
     description: 'Xem conversation và message thuộc khoa.',
   },
