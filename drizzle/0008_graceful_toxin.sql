@@ -1,0 +1,2 @@
+CREATE INDEX "users_facility_created_at_idx" ON "users" USING btree ("facility_id","created_at");--> statement-breakpoint
+CREATE INDEX "users_facility_last_login_at_idx" ON "users" USING btree ("facility_id","last_login_at");
