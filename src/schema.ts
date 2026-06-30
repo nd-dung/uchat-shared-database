@@ -118,6 +118,17 @@ export const chatbotResponseStyleEnum = pgEnum('chatbot_response_style', [
   'faq_style',
 ]);
 
+export const omniChannelEnum = pgEnum('omni_channel', [
+  'facebook',
+  'instagram',
+  'zalo',
+]);
+
+export const omniChannelAccountStatusEnum = pgEnum(
+  'omni_channel_account_status',
+  ['active', 'disabled', 'error'],
+);
+
 export const facilities = pgTable(
   'facilities',
   {
@@ -352,6 +363,33 @@ export const chatbotBehaviorSettings = pgTable(
   ],
 );
 
+export const chatbotEmbedSettings = pgTable(
+  'chatbot_embed_settings',
+  {
+    id: serial('id').primaryKey(),
+    chatbotId: integer('chatbot_id')
+      .notNull()
+      .references(() => chatbots.id)
+      .unique(),
+    enabled: boolean('enabled').notNull().default(false),
+    publicKey: text('public_key').notNull().unique(),
+    allowedOrigins: jsonb('allowed_origins')
+      .$type<string[]>()
+      .notNull()
+      .default([]),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index('chatbot_embed_settings_chatbot_id_idx').on(table.chatbotId),
+    index('chatbot_embed_settings_public_key_idx').on(table.publicKey),
+  ],
+);
+
 export const chatVisitors = pgTable(
   'chat_visitors',
   {
@@ -503,6 +541,81 @@ export const chatHandoffRequests = pgTable(
   ],
 );
 
+export const omniChannelAccounts = pgTable(
+  'omni_channel_accounts',
+  {
+    id: serial('id').primaryKey(),
+    channel: omniChannelEnum('channel').notNull(),
+    facilityId: integer('facility_id')
+      .notNull()
+      .references(() => facilities.id),
+    chatbotId: integer('chatbot_id')
+      .notNull()
+      .references(() => chatbots.id),
+    externalAccountId: text('external_account_id').notNull(),
+    externalAccountName: text('external_account_name'),
+    accessTokenEncrypted: text('access_token_encrypted').notNull(),
+    verifyTokenHash: text('verify_token_hash').notNull(),
+    webhookSecretHash: text('webhook_secret_hash'),
+    status: omniChannelAccountStatusEnum('status').notNull().default('active'),
+    settings: jsonb('settings')
+      .$type<Record<string, unknown>>()
+      .notNull()
+      .default({}),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+  },
+  (table) => [
+    uniqueIndex('omni_channel_accounts_active_external_unique')
+      .on(table.channel, table.externalAccountId)
+      .where(sql`${table.deletedAt} IS NULL`),
+    index('omni_channel_accounts_facility_chatbot_idx').on(
+      table.facilityId,
+      table.chatbotId,
+    ),
+    index('omni_channel_accounts_channel_status_idx').on(
+      table.channel,
+      table.status,
+    ),
+  ],
+);
+
+export const omniMessageReceipts = pgTable(
+  'omni_message_receipts',
+  {
+    id: serial('id').primaryKey(),
+    channel: omniChannelEnum('channel').notNull(),
+    accountExternalId: text('account_external_id').notNull(),
+    senderExternalId: text('sender_external_id').notNull(),
+    externalMessageId: text('external_message_id').notNull(),
+    conversationId: integer('conversation_id').references(
+      () => chatConversations.id,
+    ),
+    messageId: integer('message_id').references(() => chatMessages.id),
+    rawPayload: jsonb('raw_payload'),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    uniqueIndex('omni_message_receipts_external_unique').on(
+      table.channel,
+      table.accountExternalId,
+      table.externalMessageId,
+    ),
+    index('omni_message_receipts_sender_idx').on(
+      table.channel,
+      table.accountExternalId,
+      table.senderExternalId,
+    ),
+  ],
+);
+
 export const chatMessageFeedbacks = pgTable(
   'chat_message_feedbacks',
   {
@@ -651,6 +764,8 @@ export type ChatbotBehaviorSetting =
   typeof chatbotBehaviorSettings.$inferSelect;
 export type NewChatbotBehaviorSetting =
   typeof chatbotBehaviorSettings.$inferInsert;
+export type ChatbotEmbedSetting = typeof chatbotEmbedSettings.$inferSelect;
+export type NewChatbotEmbedSetting = typeof chatbotEmbedSettings.$inferInsert;
 export type ChatVisitor = typeof chatVisitors.$inferSelect;
 export type NewChatVisitor = typeof chatVisitors.$inferInsert;
 export type ChatConversation = typeof chatConversations.$inferSelect;

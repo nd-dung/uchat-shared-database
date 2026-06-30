@@ -85,6 +85,13 @@
       "when": 1782056248856,
       "tag": "0011_short_frog_thor",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1782376801469,
+      "tag": "0012_new_gargoyle",
+      "breakpoints": true
     }
   ]
 }
